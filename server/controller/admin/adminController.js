@@ -258,3 +258,24 @@ exports.getDashboardCounts = async (req, res) => {
     res.json({ success: false, message: "Error fetching dashboard counts" });
   }
 };
+
+exports.adminLogout = (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying admin session:", err);
+        return res.redirect("/dashboard"); // If error, stay on dashboard
+      }
+
+      // Clear session cookie
+      res.clearCookie("connect.sid");
+
+      // Redirect to admin login page
+      return res.redirect("/admin-login");
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.redirect("/dashboard");
+  }
+};
+

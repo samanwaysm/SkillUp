@@ -32,5 +32,6 @@ route.put('/admin/update-user/:id', controller.updateUser);
 route.delete("/admin/delete-user/:id", controller.deleteUser);
 
 route.get("/admin/dashboard-counts", controller.getDashboardCounts);
+route.get("/admin/admin-logout", controller.adminLogout);
 
 module.exports = route;

@@ -22,7 +22,7 @@ $(document).ready(function () {
 
           response.data.forEach(user => {
             const row = `
-              <tr>
+              <tr class="text-white">
                 <td>${user.name}</td>
                 <td>${user.email}</td>
                 <td>${user.phone || "-"}</td>

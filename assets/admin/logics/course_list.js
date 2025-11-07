@@ -46,7 +46,7 @@ $(document).ready(function() {
 
           response.data.forEach(course => {
             const row = `
-              <tr>
+              <tr class="text-white">
                 <td>${course.title}</td>
                 <td>${course.type}</td>
                 <td>${course.type === 'free' ? 'Free' : '₹' + course.price}</td>
