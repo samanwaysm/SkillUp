@@ -33,31 +33,36 @@
 
 $(document).ready(function() {
   let currentPage = 1;
+  let currentSearch = ""; // store search value
 
-  // Load courses with pagination
-  function loadCourses(page = 1) {
+  // Load courses with pagination and optional search
+  function loadCourses(page = 1, search = "") {
     $.ajax({
-      url: `/admin/get-courses?page=${page}`,
+      url: `/admin/get-courses?page=${page}&search=${search}`,
       method: "GET",
       success: function(response) {
         if (response.success) {
           const tableBody = $("#adminsTableBody");
           tableBody.empty();
 
-          response.data.forEach(course => {
-            const row = `
-              <tr class="text-white">
-                <td>${course.title}</td>
-                <td>${course.type}</td>
-                <td>${course.type === 'free' ? 'Free' : '₹' + course.price}</td>
-                <td>
-                  <button class="btn btn-sm btn-primary edit-btn" data-id="${course._id}">Edit</button>
-                  <button class="btn btn-sm btn-danger delete-btn" data-id="${course._id}">Delete</button>
-                </td>
-              </tr>
-            `;
-            tableBody.append(row);
-          });
+          if (response.data.length === 0) {
+            tableBody.append('<tr><td colspan="4" class="text-center text-white">No courses found</td></tr>');
+          } else {
+            response.data.forEach(course => {
+              const row = `
+                <tr class="text-white">
+                  <td>${course.title}</td>
+                  <td>${course.type}</td>
+                  <td>${course.type === 'free' ? 'Free' : '₹' + course.price}</td>
+                  <td>
+                    <button class="btn btn-sm btn-primary edit-btn" data-id="${course._id}">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${course._id}">Delete</button>
+                  </td>
+                </tr>
+              `;
+              tableBody.append(row);
+            });
+          }
 
           renderPagination(response.pagination);
         }
@@ -74,14 +79,12 @@ $(document).ready(function() {
     const paginationContainer = $("#pagination");
     paginationContainer.empty();
 
-    // Previous Button
     paginationContainer.append(`
       <li class="page-item ${page === 1 ? 'disabled' : ''}">
         <a class="page-link" href="#" data-page="${page - 1}">Previous</a>
       </li>
     `);
 
-    // Page Numbers
     for (let i = 1; i <= pages; i++) {
       paginationContainer.append(`
         <li class="page-item ${i === page ? 'active' : ''}">
@@ -90,7 +93,6 @@ $(document).ready(function() {
       `);
     }
 
-    // Next Button
     paginationContainer.append(`
       <li class="page-item ${page === pages ? 'disabled' : ''}">
         <a class="page-link" href="#" data-page="${page + 1}">Next</a>
@@ -104,8 +106,15 @@ $(document).ready(function() {
     const page = $(this).data("page");
     if (page && page > 0) {
       currentPage = page;
-      loadCourses(page);
+      loadCourses(currentPage, currentSearch);
     }
+  });
+
+  // Search input event
+  $("#searchBox").on("input", function() {
+    currentSearch = $(this).val().trim();
+    currentPage = 1; // reset to first page
+    loadCourses(currentPage, currentSearch);
   });
 
   // Edit button click
@@ -136,17 +145,17 @@ $(document).ready(function() {
           method: "DELETE",
           success: function(response) {
             if (response.success) {
-                Swal.fire({
-                    title: "Deleted!",
-                    text: "Course deleted successfully.",
-                    icon: "success",
-                    background: "#1e1e2f",
-                    color: "#ffffff",
-                    iconColor: "#00d97e",
-                    confirmButtonColor: "#00d97e",
-                }).then(() => {
-                    loadCourses(currentPage);
-                });
+              Swal.fire({
+                title: "Deleted!",
+                text: "Course deleted successfully.",
+                icon: "success",
+                background: "#1e1e2f",
+                color: "#ffffff",
+                iconColor: "#00d97e",
+                confirmButtonColor: "#00d97e",
+              }).then(() => {
+                loadCourses(currentPage, currentSearch);
+              });
             } else {
               Swal.fire("Error!", response.message, "error");
             }
@@ -160,5 +169,5 @@ $(document).ready(function() {
   });
 
   // Initial load
-  loadCourses(currentPage);
+  loadCourses(currentPage, currentSearch);
 });

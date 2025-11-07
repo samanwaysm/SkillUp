@@ -80,24 +80,69 @@ exports.addCourse = async (req, res) => {
   }
 };
 
-// // Get all courses
 // exports.getAllCourses = async (req, res) => {
 //   try {
-//     const courses = await Course.find();
-//     res.json({ success: true, data: courses });
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = 5; // Number of courses per page
+//     const skip = (page - 1) * limit;
+
+//     const total = await Course.countDocuments();
+//     const courses = await Course.find().skip(skip).limit(limit);
+
+//     res.json({
+//       success: true,
+//       data: courses,
+//       pagination: {
+//         total,
+//         page,
+//         pages: Math.ceil(total / limit)
+//       }
+//     });
 //   } catch (error) {
-//     console.error('Error fetching courses:', error);
-//     res.status(500).json({ success: false, message: 'Server error' });
+//     console.error("Error fetching courses:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
 //   }
 // };
+
+// exports.getAllCourses = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = 5; // Number of courses per page
+//     const skip = (page - 1) * limit;
+//     const search = req.query.search || "";
+
+//     // Filter courses by title (case-insensitive)
+//     const query = search ? { title: { $regex: search, $options: "i" } } : {};
+
+//     const total = await Course.countDocuments(query);
+//     const courses = await Course.find(query).skip(skip).limit(limit);
+
+//     res.json({
+//       success: true,
+//       data: courses,
+//       pagination: {
+//         total,
+//         page,
+//         pages: Math.ceil(total / limit),
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching courses:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 exports.getAllCourses = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 5; // Number of courses per page
+    const limit = 5;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const total = await Course.countDocuments();
-    const courses = await Course.find().skip(skip).limit(limit);
+    const query = search ? { title: { $regex: search, $options: "i" } } : {};
+
+    const total = await Course.countDocuments(query);
+    const courses = await Course.find(query).skip(skip).limit(limit);
 
     res.json({
       success: true,
@@ -113,6 +158,7 @@ exports.getAllCourses = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 exports.deleteCourse = async (req, res) => {
   try {
