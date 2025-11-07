@@ -75,23 +75,35 @@ const { log } = require("console");
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
+    const errors = {};
 
-    // Validation
-    if (!name || !email || !phone || !password) {
-      return res.status(400).json({ message: "All fields are required." });
+    // 🟡 Basic Validation
+    if (!name) errors.name = "Name is required.";
+    if (!email) errors.email = "Email is required.";
+    if (!phone) errors.phone = "Phone number is required.";
+    if (!password) errors.password = "Password is required.";
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ success: false, errors });
     }
 
+    // 🟢 Format Validation
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      return res.status(400).json({ message: "Invalid email format." });
+      return res.status(400).json({ success: false, errors: { email: "Invalid email format." } });
     }
 
     if (!/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ message: "Phone number must be 10 digits." });
+      return res.status(400).json({ success: false, errors: { phone: "Phone number must be 10 digits." } });
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, errors: { password: "Password must be at least 6 characters." } });
+    }
+
+    // 🟣 Check if user exists
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existingUser) {
-      return res.status(400).json({ message: "Email or phone already registered." });
+      return res.status(400).json({ success: false, errors: { email: "Email or phone already registered." } });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -107,7 +119,7 @@ exports.registerUser = async (req, res) => {
       theme: "default",
       product: {
         name: "SkillUp Verification",
-        link: "https://yourdomain.com/",
+        link: "https://skillup-ca86.onrender.com",
       },
     });
 

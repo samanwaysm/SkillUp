@@ -143,50 +143,70 @@
       }
     }
 
-    // Validation and fetch
-    document.getElementById("registerForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+     const nameEl = document.getElementById("name");
+  const emailEl = document.getElementById("email");
+  const phoneEl = document.getElementById("phone");
+  const passwordEl = document.getElementById("password");
+  const confirmEl = document.getElementById("confirm_password");
 
-      const fields = ["name", "email", "phone", "password", "confirm_password"];
-      fields.forEach(f => {
-        const input = document.getElementById(f);
-        input.classList.remove("is-invalid");
-        document.getElementById(f + "Error").textContent = "";
+  // Helper: show error message
+  function setError(field, message) {
+    const input = document.getElementById(field);
+    const feedback = document.getElementById(field + "Error");
+    input.classList.add("is-invalid");
+    feedback.textContent = message;
+  }
+
+  // Validation and fetch
+  document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const fields = ["name", "email", "phone", "password", "confirm_password"];
+    fields.forEach(f => {
+      const input = document.getElementById(f);
+      input.classList.remove("is-invalid");
+      document.getElementById(f + "Error").textContent = "";
+    });
+
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const phone = phoneEl.value.trim();
+    const password = passwordEl.value.trim();
+    const confirm = confirmEl.value.trim();
+
+    let hasError = false;
+
+    if (!name) setError("name", "Please enter your name."), hasError = true;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) setError("email", "Please enter a valid email."), hasError = true;
+    if (!/^\d{10}$/.test(phone)) setError("phone", "Please enter a 10-digit phone number."), hasError = true;
+    if (password.length < 6) setError("password", "Password must be at least 6 characters."), hasError = true;
+    if (confirm !== password) setError("confirm_password", "Passwords do not match."), hasError = true;
+
+    if (hasError) return;
+
+    // Send data to backend
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, password })
       });
 
-      const name = nameEl.value.trim();
-      const email = emailEl.value.trim();
-      const phone = phoneEl.value.trim();
-      const password = passwordEl.value.trim();
-      const confirm = confirmEl.value.trim();
+      const data = await res.json();
 
-      let hasError = false;
-
-      if (!name) setError("name", "Please enter your name."), hasError = true;
-      if (!email || !/^\S+@\S+\.\S+$/.test(email)) setError("email", "Please enter a valid email."), hasError = true;
-      if (!/^\d{10}$/.test(phone)) setError("phone", "Please enter a 10-digit phone number."), hasError = true;
-      if (password.length < 6) setError("password", "Password must be at least 6 characters."), hasError = true;
-      if (confirm !== password) setError("confirm_password", "Passwords do not match."), hasError = true;
-
-      if (hasError) return;
-
-      // Send data to backend
-      try {
-        const res = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            // ✅ Redirect to backend-specified route
-            if (data.redirect) {
-              window.location.href = data.redirect;
-            } else {
-              window.location.href = "/login"; // fallback
-            }
+      if (res.ok) {
+        // ✅ Redirect to backend-specified route
+        if (data.redirect) {
+          window.location.href = data.redirect;
+        } else {
+          window.location.href = "/login"; // fallback
+        }
+      } else {
+        // 🟠 Show backend validation errors inline (if provided)
+        if (data.errors) {
+          Object.keys(data.errors).forEach(field => {
+            setError(field, data.errors[field]);
+          });
         } else {
           Swal.fire({
             icon: "error",
@@ -194,30 +214,16 @@
             text: data.message || "Registration failed. Please try again.",
           });
         }
-      } catch (err) {
-        console.error("Error:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Server Error",
-          text: "Something went wrong. Please try again later.",
-        });
       }
-    });
-
-    // Helper: show error message
-    function setError(field, message) {
-      const input = document.getElementById(field);
-      const feedback = document.getElementById(field + "Error");
-      input.classList.add("is-invalid");
-      feedback.textContent = message;
+    } catch (err) {
+      console.error("Error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Something went wrong. Please try again later.",
+      });
     }
-
-    // Cache input elements
-    const nameEl = document.getElementById("name");
-    const emailEl = document.getElementById("email");
-    const phoneEl = document.getElementById("phone");
-    const passwordEl = document.getElementById("password");
-    const confirmEl = document.getElementById("confirm_password");
+  });
   </script>
 </body>
 

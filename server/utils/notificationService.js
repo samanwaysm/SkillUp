@@ -38,7 +38,7 @@ exports.sendEnrollmentEmail = async (email, userName, courseTitle) => {
           button: {
             color: "#22BC66",
             text: "Go to Website",
-            link: "https://yourwebsite.com/dashboard",
+            link: "https://skillup-ca86.onrender.com",
           },
         },
         outro: "Thank you for choosing SkillUp Academy. Keep learning and growing!",
@@ -68,7 +68,7 @@ exports.sendWhatsAppConfirmation = async (phone, userName, courseTitle) => {
     await twilioClient.messages.create({
       from: "whatsapp:+14155238886", // Twilio Sandbox number
       to: `whatsapp:+91${phone}`,   // User's number (India example)
-      body: `Hi ${userName}! 🎉 You’ve successfully enrolled in "${courseTitle}". Start learning at https://yourwebsite.com/dashboard.`,
+      body: `Hi ${userName}! 🎉 You’ve successfully enrolled in "${courseTitle}". Start learning at https://skillup-ca86.onrender.com.`,
     });
 
     console.log(`✅ WhatsApp message sent to +91${phone}`);
